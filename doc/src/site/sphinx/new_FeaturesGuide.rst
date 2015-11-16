@@ -8,7 +8,7 @@ Main features
 
 - Code-Free
 
-Using Sparkta web site is ready to let you work without writing any line of code. That means that no programming skills are needed to work with Sparkta.
+Sparkta web site is ready to let you work without writing any line of code. That means that no programming skills are needed to work with Sparkta.
 
 - Integrations ready to use inputs and outputs
 

@@ -14,17 +14,14 @@ following commands::
 
 Download
 ===========
+An easy way to test Sparkta is using it with the :ref:`sandbox-label`.
+
 To download Sparkta you can do itby unpackaging a `release <https://github
 .com/Stratio/sparkta/releases>`__ or by generating the deb or rpm packages from the `source code <https://github
 .com/Stratio/sparkta>`__.
 
 Build
 ===========
-
-Install
-===========
-
-An easy way to test Sparkta is using it with the :ref:`sandbox-label`.
 
 You can generate rpm and deb packages by running::
 
@@ -44,12 +41,34 @@ You can generate rpm and deb packages by running::
   - dpkg-dev
   - rpmdevtools
 
-.. _zookeeper-label:
+Install
+===========
+
+Once you have the rpm or deb packages you need to install them::
+
+ dpkg -i package.deb
+
+ rpm -i package.rpm
+
+In case you need more help about how to install packages you can have more information about |deb_link| and |rpm_link|.
+
+
+.. |deb_link| raw:: html
+
+   <a href="http://www.cyberciti.biz/faq/ubuntu-linux-how-do-i-install-deb-packages/"
+   target="_blank">deb</a>
+
+.. |rpm_link| raw:: html
+
+   <a href="http://www.rpm.org/max-rpm/ch-rpm-install.html"
+   target="_blank">rpm</a>
 
 
 Configure
 ===========
 
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 Run
 ===========
 
@@ -287,7 +306,7 @@ Example::
 Submitting a Policy
 --------
 
-**EXPLAIN WHAT WE DO WITH THIS COMMAND**
+The best way to submit a policy is using the web, but you can still doing it with the terminal. The commands belows run Sparkta with the given policy.
 
 The policy must be submitted with the following syntax::
 

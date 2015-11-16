@@ -16,4 +16,29 @@ Modules that Sparkta uses
 Modules that use Sparkta
 ====================
 
-- Stratio Viewer is the module in charge of the visualization of the data. Their input is Sparkta output. Viewer go to the output database to find the data that Sparkta has previously aggregated.
+- Stratio Viewer is the module in charge of the visualization of the data. Their input is Sparkta output. Viewer go to the output database to find the data that Sparkta has previously aggregated. Here you can see a few examples of what they do with the aggregated data coming from Sparkta.
+
+
+.. image:: images/mapa.png
+   :height: 400 px
+   :width:  700 px
+   :scale:  50 %
+   :align: left
+
+.. image:: images/linechartwithfocus.png
+   :height: 400 px
+   :width:  700 px
+   :scale:  50 %
+   :align: right
+
+.. image:: images/chord.png
+   :height: 400 px
+   :width:  700 px
+   :scale:  50 %
+   :align: left
+
+.. image:: images/line-plus-bar-chart-widget.png
+   :height: 400 px
+   :width:  700 px
+   :scale:  50 %
+   :align: right

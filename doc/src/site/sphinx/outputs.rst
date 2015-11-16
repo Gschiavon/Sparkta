@@ -19,15 +19,6 @@ Outputs Configurations
 - :ref:`csv-label`
 
 
-.. image:: images/outputs.png
-   :height: 400 px
-   :width: 420 px
-   :align: center
-   :alt: Outputs in Sparkta
-
-
-
-
 .. _generic-label:
 
 Generic Configuration
@@ -199,7 +190,7 @@ The Cassandra output uses the generic implementation with DataFrames.
 
 In Cassandra each cube define one table, but when you modify the policy that involve this cube, Sparkta create a new
 table with the next version. The name of all tables are "dimensions_v1" when modify the policy the new table in
-Cassandra are "dimensions_v2".
+Cassandra is "dimensions_v2".
 
 
 .. _elasticsearch-label:
@@ -242,6 +233,10 @@ The Elasticsearch output uses the generic implementation with DataFrames.
 +--------------------------+-----------------------------------------------+----------+-----------------------+
 | dateType                 | The type of the date fields.                  | Yes      | None                  |
 +--------------------------+-----------------------------------------------+----------+-----------------------+
+
+In ElasticSearch each cube define one index, but when you modify the policy that involve this cube, Sparkta create a new
+mapping with the next version. The name of all tables are the dimensions separated by '_' and the default mapping is
+"sparkta_v1" when modify the policy the new mapping in ElasticSearch is "sparkta_v2".
 
 
 .. _redis-label:

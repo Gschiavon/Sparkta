@@ -29,21 +29,18 @@ Thanks to Sparkta there is no need to:
 
 - Develop aggregation code in Spark Streaming
 
+You can run Sparkta easily from the web site, you don't need deep knowledge about Spark Streaming to be able to work with Sparkta.
+
 - Develop custom inputs and outputs
 
+We already developed several inputs and outputs to make it easier for you.
+
 - Develop complex aggregations on spark streaming
+
+
 
 - Manage different cluster technologies
 
 - Set up and model your database
-
-Advantages of using Stratio Sparkta
-==============
-
-- X
-
-- X
-
-- X
 
 
