@@ -46,23 +46,23 @@ class AggregateOperationsTest extends FlatSpec with ShouldMatchers {
     val fixedMeasures = MeasuresValues(Map("agg2" -> Some("2")))
     val measureEmpty = MeasuresValues(Map())
   }
-
-  "AggregateOperations" should "return a correct keyString" in new CommonValues {
-    val expect = "dim1_dim2_minute"
-    val result = AggregateOperations.keyString(dimensionValuesT, timeDimension, fixedDimensionsName)
-    result should be(expect)
-  }
+//
+//  "AggregateOperations" should "return a correct keyString" in new CommonValues {
+//    val expect = "dim1_dim2_minute"
+//    val result = AggregateOperations.keyString(dimensionValuesT, timeDimension, fixedDimensionsName)
+//    result should be(expect)
+//  }
 
   it should "return a correct toKeyRow tuple" in new CommonValues {
     val expect = (Some("testCube"), Row("value1", "value2", "value3", new Timestamp(1L), "2", "value"))
-    val result = AggregateOperations.toKeyRow(
+    val result = AggregateOperations.toKeyRowWithTime(
       dimensionValuesT, measures, fixedMeasures, fixedDimensions, false, TypeOp.Timestamp)
     result should be(expect)
   }
 
   it should "return a correct toKeyRow tuple without fixedMeasure" in new CommonValues {
     val expect = (Some("testCube"), Row("value1", "value2", "value3", new Timestamp(1L), "value"))
-    val result = AggregateOperations.toKeyRow(dimensionValuesT,
+    val result = AggregateOperations.toKeyRowWithTime(dimensionValuesT,
       measures,
       measureEmpty,
       fixedDimensions,
@@ -73,14 +73,14 @@ class AggregateOperationsTest extends FlatSpec with ShouldMatchers {
 
   it should "return a correct toKeyRow tuple without fixedDimensions" in new CommonValues {
     val expect = (Some("testCube"), Row("value1", "value2", new Timestamp(1L), "2", "value"))
-    val result = AggregateOperations.toKeyRow(
+    val result = AggregateOperations.toKeyRowWithTime(
       dimensionValuesT, measures, fixedMeasures, None, false, TypeOp.Timestamp)
     result should be(expect)
   }
 
   it should "return a correct toKeyRow tuple without fixedDimensions and fixedMeasure" in new CommonValues {
     val expect = (Some("testCube"), Row("value1", "value2", new Timestamp(1L), "value"))
-    val result = AggregateOperations.toKeyRow(
+    val result = AggregateOperations.toKeyRowWithTime(
       dimensionValuesT, measures, measureEmpty, None, false, TypeOp.Timestamp)
     result should be(expect)
   }
@@ -88,7 +88,7 @@ class AggregateOperationsTest extends FlatSpec with ShouldMatchers {
   it should "return a correct toKeyRow tuple without measures and  fixedDimensions and fixedMeasure" in
     new CommonValues {
       val expect = (Some("testCube"), Row("value1", "value2", new Timestamp(1L)))
-      val result = AggregateOperations.toKeyRow(dimensionValuesT,
+      val result = AggregateOperations.toKeyRowWithTime(dimensionValuesT,
         measureEmpty,
         measureEmpty,
         None,
@@ -102,7 +102,7 @@ class AggregateOperationsTest extends FlatSpec with ShouldMatchers {
     new CommonValues {
       val expect = (Some("testCube"), Row(new Timestamp(1L)))
       val result =
-        AggregateOperations.toKeyRow(DimensionValuesTime("testCube",Seq(), timestamp, timeDimension),
+        AggregateOperations.toKeyRowWithTime(DimensionValuesTime("testCube",Seq(), timestamp, timeDimension),
           measureEmpty,
           measureEmpty,
           None,
@@ -114,14 +114,14 @@ class AggregateOperationsTest extends FlatSpec with ShouldMatchers {
   it should "return a correct sequence of values with aggregations and dimensions" in
     new CommonValues {
       val expect = (Seq("value1", "value2", 1L), Seq("value"))
-      val result = AggregateOperations.toSeq(dimensionValuesT.dimensionValues, measures.values)
+      val result = AggregateOperations.toSeq(dimensionValuesT.dimensionValuesTime, measures.values)
       result should be(expect)
     }
 
   it should "return a correct sequence of values with empty aggregations and dimensions" in
     new CommonValues {
       val expect = (Seq("value1", "value2", 1L), Seq())
-      val result = AggregateOperations.toSeq(dimensionValuesT.dimensionValues, Map())
+      val result = AggregateOperations.toSeq(dimensionValuesT.dimensionValuesTime, Map())
       result should be(expect)
     }
 

@@ -102,14 +102,22 @@ abstract class Output(keyName: String,
     })
 
   protected def persistDataFrame(stream: DStream[(DimensionValuesTime, MeasuresValues)]): Unit = {
-    stream.map { case (dimensionValuesTime, measures) =>
-      AggregateOperations.toKeyRow(
+    stream.map {
+      case (dimensionValuesTime: DimensionValuesTime, measures: Measures) =>
+      AggregateOperations.toKeyRowWithTime(
         filterDimensionValueTimeByFixedDimensions(dimensionValuesTime),
         measures,
         fixedMeasures,
         getFixedDimensions(dimensionValuesTime),
         isAutoCalculateId,
         dateType)
+      case (dimensionValuesWithoutTime: DimensionValuesWithoutTime, measures: Measures) =>
+        AggregateOperations.toKeyRowWithoutTime(
+          dimensionValuesWithoutTime,
+          measures,
+          fixedMeasures,
+          getFixedDimensions(dimensionValuesWithoutTime),
+          isAutoCalculateId)
     }
       .foreachRDD(rdd => {
         if (rdd.take(1).length > 0) {
@@ -175,15 +183,16 @@ abstract class Output(keyName: String,
   def getFixedDimensions(dimensionValuesTime: DimensionValuesTime): Option[Seq[(String, Any)]] =
     if (fixedDimensions.isEmpty) None
     else Some(fixedDimensions.flatMap(fxdimension => {
-      dimensionValuesTime.dimensionValues.find(dimension => dimension.getNameDimension == fxdimension)
+      dimensionValuesTime.dimensionValuesTime.find(dimension => dimension.getNameDimension == fxdimension)
         .map(dimensionValue => (fxdimension, dimensionValue.value))
     }))
 
+  //TODO Do we need fixedDimensions?? we dont have the multiplexer
   def filterDimensionValueTimeByFixedDimensions(dimensionValuesTime: DimensionValuesTime)
   : DimensionValuesTime =
     if (fixedDimensions.isEmpty) dimensionValuesTime
     else dimensionValuesTime.copy(
-      dimensionValues = dimensionValuesTime.dimensionValues
+      dimensionValuesTime = dimensionValuesTime.dimensionValuesTime
         .filter(dimensionValue => !fixedDimensions.contains(dimensionValue.getNameDimension))
     )
 

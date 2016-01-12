@@ -53,7 +53,7 @@ class PrintOutput(keyName: String,
   }
 
   override def upsert(metricOperations: Iterator[(DimensionValuesTime, MeasuresValues)]): Unit = {
-    metricOperations.foreach(metricOp =>
-      log.info(AggregateOperations.toString(metricOp._1, metricOp._2, metricOp._1.timeDimension, fixedDimensions)))
+//    metricOperations.foreach(metricOp =>
+//      log.info(AggregateOperations.toString(metricOp._1, metricOp._2, metricOp._1.timeDimension, fixedDimensions)))
   }
 }

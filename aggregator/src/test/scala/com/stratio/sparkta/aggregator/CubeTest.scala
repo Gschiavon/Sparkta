@@ -31,13 +31,72 @@ import com.stratio.sparkta.sdk._
 @RunWith(classOf[JUnitRunner])
 class CubeTest extends TestSuiteBase {
 
-  test("aggregate") {
+//  test("aggregate with time") {
+//
+//    val PreserverOrder = true
+//    val defaultDimension = new DefaultField
+//    val checkpointInterval = 10000
+//    val checkpointTimeAvailability = 60000
+//    val checkpointGranularity = "minute"
+//    val eventGranularity = DateOperations.dateFromGranularity(DateTime.now(), "minute")
+//    val name = "cubeName"
+//
+//    val cube = Cube(
+//      name,
+//      Seq(Dimension("dim1", "foo", "identity", defaultDimension)),
+//      Seq(new CountOperator("count", Map()), new SumOperator("sum", Map("inputField" -> "n"))),
+//      checkpointGranularity,
+//      checkpointInterval,
+//      checkpointGranularity,
+//      checkpointTimeAvailability)
+//
+//    testOperation(getInput, cube.aggregate, getOutput, PreserverOrder)
+//
+//    def getInput: Seq[Seq[(DimensionValuesTime, InputFieldsValues)]] = Seq(Seq(
+//      (DimensionValuesTime("testCube",Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension), "bar")),
+//        eventGranularity, checkpointGranularity), InputFieldsValues(Map[String, JSerializable]("n" -> 4))),
+//      (DimensionValuesTime("testCube",Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension), "bar")),
+//        eventGranularity, checkpointGranularity), InputFieldsValues(Map[String, JSerializable]("n" -> 3))),
+//      (DimensionValuesTime("testCube",Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension), "foo")),
+//        eventGranularity, checkpointGranularity), InputFieldsValues(Map[String, JSerializable]("n" -> 3)))),
+//      Seq(
+//        (DimensionValuesTime("testCube",Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension), "bar")),
+//          eventGranularity, checkpointGranularity), InputFieldsValues(Map[String, JSerializable]("n" -> 4))),
+//        (DimensionValuesTime("testCube",Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension), "bar")),
+//          eventGranularity, checkpointGranularity), InputFieldsValues(Map[String, JSerializable]("n" -> 3))),
+//        (DimensionValuesTime("testCube",Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension), "foo")),
+//          eventGranularity, checkpointGranularity), InputFieldsValues(Map[String, JSerializable]("n" -> 3)))))
+//
+//    def getOutput: Seq[Seq[(DimensionValuesTime, MeasuresValues)]] = Seq(
+//      Seq(
+//        (DimensionValuesTime("testCube",Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension),
+//          "bar")), eventGranularity, checkpointGranularity), MeasuresValues(Map("count" -> Some(2L), "sum" -> Some(7L)))),
+//        (DimensionValuesTime("testCube",Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension),
+//          "foo")), eventGranularity, checkpointGranularity), MeasuresValues(Map("count" -> Some(1L), "sum" -> Some(3L))))),
+//      Seq(
+//        (DimensionValuesTime("testCube",Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension),
+//          "bar")), eventGranularity, checkpointGranularity), MeasuresValues(Map("count" -> Some(4L), "sum" -> Some(14L)))),
+//        (DimensionValuesTime("testCube",Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension),
+//          "foo")), eventGranularity, checkpointGranularity), MeasuresValues(Map("count" -> Some(2L), "sum" -> Some(6L))))))
+//  }
+
+
+
+
+
+
+
+
+
+
+  test("aggregate without time") {
 
     val PreserverOrder = true
     val defaultDimension = new DefaultField
     val checkpointInterval = 10000
     val checkpointTimeAvailability = 60000
     val checkpointGranularity = "minute"
+    val checkpointTimeDimension = "none"
     val eventGranularity = DateOperations.dateFromGranularity(DateTime.now(), "minute")
     val name = "cubeName"
 
@@ -45,38 +104,65 @@ class CubeTest extends TestSuiteBase {
       name,
       Seq(Dimension("dim1", "foo", "identity", defaultDimension)),
       Seq(new CountOperator("count", Map()), new SumOperator("sum", Map("inputField" -> "n"))),
-      checkpointGranularity,
+      checkpointTimeDimension,
       checkpointInterval,
       checkpointGranularity,
       checkpointTimeAvailability)
 
     testOperation(getInput, cube.aggregate, getOutput, PreserverOrder)
 
-    def getInput: Seq[Seq[(DimensionValuesTime, InputFieldsValues)]] = Seq(Seq(
-      (DimensionValuesTime("testCube",Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension), "bar")),
-        eventGranularity, checkpointGranularity), InputFieldsValues(Map[String, JSerializable]("n" -> 4))),
-      (DimensionValuesTime("testCube",Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension), "bar")),
-        eventGranularity, checkpointGranularity), InputFieldsValues(Map[String, JSerializable]("n" -> 3))),
-      (DimensionValuesTime("testCube",Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension), "foo")),
-        eventGranularity, checkpointGranularity), InputFieldsValues(Map[String, JSerializable]("n" -> 3)))),
-      Seq(
-        (DimensionValuesTime("testCube",Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension), "bar")),
-          eventGranularity, checkpointGranularity), InputFieldsValues(Map[String, JSerializable]("n" -> 4))),
-        (DimensionValuesTime("testCube",Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension), "bar")),
-          eventGranularity, checkpointGranularity), InputFieldsValues(Map[String, JSerializable]("n" -> 3))),
-        (DimensionValuesTime("testCube",Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension), "foo")),
-          eventGranularity, checkpointGranularity), InputFieldsValues(Map[String, JSerializable]("n" -> 3)))))
+    def getInput: Seq[Seq[(DimensionValuesWithoutTime, InputFieldsValues)]] = Seq(Seq(
+      (DimensionValuesWithoutTime(
+        "testCube",
+        Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension), "bar"))),
+        InputFieldsValues(Map[String, JSerializable]("n" -> 4))),
 
-    def getOutput: Seq[Seq[(DimensionValuesTime, MeasuresValues)]] = Seq(
+      (DimensionValuesWithoutTime(
+        "testCube",
+        Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension), "bar"))),
+        InputFieldsValues(Map[String, JSerializable]("n" -> 3))),
+
+      (DimensionValuesWithoutTime(
+        "testCube",
+        Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension), "foo"))),
+        InputFieldsValues(Map[String, JSerializable]("n" -> 3)))),
+
       Seq(
-        (DimensionValuesTime("testCube",Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension),
-          "bar")), eventGranularity, checkpointGranularity), MeasuresValues(Map("count" -> Some(2L), "sum" -> Some(7L)))),
-        (DimensionValuesTime("testCube",Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension),
-          "foo")), eventGranularity, checkpointGranularity), MeasuresValues(Map("count" -> Some(1L), "sum" -> Some(3L))))),
+        (DimensionValuesWithoutTime(
+          "testCube",
+          Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension), "bar"))),
+          InputFieldsValues(Map[String, JSerializable]("n" -> 4))),
+
+        (DimensionValuesWithoutTime(
+          "testCube",
+          Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension), "bar"))),
+          InputFieldsValues(Map[String, JSerializable]("n" -> 3))),
+
+        (DimensionValuesWithoutTime(
+          "testCube",
+          Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension), "foo"))),
+          InputFieldsValues(Map[String, JSerializable]("n" -> 3)))))
+
+    def getOutput: Seq[Seq[(DimensionValuesWithoutTime, MeasuresValues)]] = Seq(
       Seq(
-        (DimensionValuesTime("testCube",Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension),
-          "bar")), eventGranularity, checkpointGranularity), MeasuresValues(Map("count" -> Some(4L), "sum" -> Some(14L)))),
-        (DimensionValuesTime("testCube",Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension),
-          "foo")), eventGranularity, checkpointGranularity), MeasuresValues(Map("count" -> Some(2L), "sum" -> Some(6L))))))
+        (DimensionValuesWithoutTime(
+          "testCube",
+          Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension),"bar"))),
+          MeasuresValues(Map("count" -> Some(2L), "sum" -> Some(7L)))),
+
+        (DimensionValuesWithoutTime("testCube",
+          Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension),"foo"))),
+          MeasuresValues(Map("count" -> Some(1L), "sum" -> Some(3L))))),
+
+      Seq(
+        (DimensionValuesWithoutTime(
+          "testCube",
+          Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension),"bar"))),
+          MeasuresValues(Map("count" -> Some(4L), "sum" -> Some(14L)))),
+
+        (DimensionValuesWithoutTime(
+          "testCube",
+          Seq(DimensionValue(Dimension("dim1", "foo", "identity", defaultDimension),"foo"))),
+          MeasuresValues(Map("count" -> Some(2L), "sum" -> Some(6L))))))
   }
 }

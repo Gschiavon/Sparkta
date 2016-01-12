@@ -60,50 +60,78 @@ case class Cube(name: String,
    * 3. Cube with associtaive and non associative operators.
    * 4. Cube with no operators.
    */
-
-  def aggregate(dimensionsValues: DStream[(DimensionValuesTime, InputFieldsValues)])
-  : DStream[(DimensionValuesTime, MeasuresValues)] = {
+  //scalastyle:off
+  def aggregate(dimensionsValues: DStream[(DimensionValues, InputFieldsValues)])
+  : DStream[(DimensionValues, MeasuresValues)] = {
 
     val filteredValues = filterDimensionValues(dimensionsValues)
-    val associativesCalculated = if (associativeOperators.nonEmpty)
-      Option(updateAssociativeState(associativeAggregation(filteredValues)))
+    val associativesCalculated = if (associativeOperators.nonEmpty){
+      val associativeAgg = associativeAggregation(filteredValues)
+      associativeAgg match {
+        case dimensionsValuesTime: DStream[(DimensionValuesTime, AggregationsValues)] => {
+          Option(updateAssociativeStateWithTime(dimensionsValuesTime))
+        }
+        case dimensionsValuesWithoutTime: DStream[(DimensionValuesWithoutTime, AggregationsValues)] => {
+          Option(updateAssociativeStateWithoutTime(dimensionsValuesWithoutTime))
+        }
+      }
+    }
     else None
-    val nonAssociativesCalculated = if (nonAssociativeOperators.nonEmpty)
-      Option(aggregateNonAssociativeValues(updateNonAssociativeState(filteredValues)))
+    val nonAssociativesCalculated = if (nonAssociativeOperators.nonEmpty){
+      filteredValues match {
+        case dimensionsValuesTime: DStream[(DimensionValuesTime, InputFields)] => {
+          Option(aggregateNonAssociativeValuesWithTime(updateNonAssociativeStateWithTime(dimensionsValuesTime)))
+        }
+        case dimensionsValuesWithoutTime: DStream[(DimensionValuesWithoutTime, InputFields)] => {
+          Option(aggregateNonAssociativeValuesWithoutTime(updateNonAssociativeStateWithoutTime(dimensionsValuesWithoutTime)))
+        }
+      }
+    }
     else None
 
     (associativesCalculated, nonAssociativesCalculated) match {
-      case (Some(associativeValues), Some(nonAssociativeValues)) =>
+      case (Some(associativeValues:DStream[(DimensionValues, MeasuresValues)]),
+      Some(nonAssociativeValues: DStream[(DimensionValues, MeasuresValues)])) =>
         associativeValues.cogroup(nonAssociativeValues)
           .mapValues { case (associativeAggregations, nonAssociativeAggregations) => MeasuresValues(
             (associativeAggregations.flatMap(_.values) ++ nonAssociativeAggregations.flatMap(_.values))
               .toMap)
           }
-      case (Some(associativeValues), None) => associativeValues
-      case (None, Some(nonAssociativeValues)) => nonAssociativeValues
+      case (Some(associativeValues:DStream[(DimensionValues, MeasuresValues)]), None) => associativeValues
+      case (None, Some(nonAssociativeValues:DStream[(DimensionValues, MeasuresValues)])) => nonAssociativeValues
       case _ =>
         log.warn("You should define operators for aggregate input values")
         noAggregationsState(dimensionsValues)
     }
   }
+  //scalastyle: on
 
   /**
    * Filter dimension values that correspond with the current cube dimensions
    */
 
-  protected def filterDimensionValues(dimensionValues: DStream[(DimensionValuesTime, InputFieldsValues)])
-  : DStream[(DimensionValuesTime, InputFields)] = {
+  protected def filterDimensionValues(dimensionValues: DStream[(DimensionValues, InputFieldsValues)])
+  : DStream[(DimensionValues, InputFields)] = {
 
-    dimensionValues.map { case (dimensionsValuesTime, aggregationValues) =>
-      val dimensionsFiltered = dimensionsValuesTime.dimensionValues.filter(dimVal =>
-        dimensions.exists(comp => comp.name == dimVal.dimension.name))
+    dimensionValues.map {
+      case (dimensionsValuesTime: DimensionValuesTime, aggregationValues) =>
+        val dimensionsFiltered = dimensionsValuesTime.dimensionValuesTime.filter(dimVal =>
+          dimensions.exists(comp => comp.name == dimVal.dimension.name))
 
-      (dimensionsValuesTime.copy(dimensionValues = dimensionsFiltered, timeDimension = checkpointTimeDimension),
-        InputFields(aggregationValues, UpdatedValues))
+        (dimensionsValuesTime.copy(dimensionValuesTime = dimensionsFiltered, timeDimension = checkpointTimeDimension),
+          InputFields(aggregationValues, UpdatedValues))
+
+      case (dimensionsValuesWithoutTime: DimensionValuesWithoutTime, aggregationValues) =>
+        val dimensionsFiltered = dimensionsValuesWithoutTime.dimensionValues.filter(dimVal =>
+          dimensions.exists(comp => comp.name == dimVal.dimension.name))
+
+        (dimensionsValuesWithoutTime.copy(dimensionValues = dimensionsFiltered),
+          InputFields(aggregationValues, UpdatedValues))
     }
   }
 
-  protected def updateNonAssociativeState(dimensionsValues: DStream[(DimensionValuesTime, InputFields)])
+
+  protected def updateNonAssociativeStateWithTime(dimensionsValues: DStream[(DimensionValuesTime, InputFields)])
   : DStream[(DimensionValuesTime, Seq[Aggregation])] = {
 
     dimensionsValues.checkpoint(new Duration(checkpointInterval))
@@ -121,7 +149,27 @@ case class Cube(name: String,
     val valuesCheckpointed = dimensionsValues.updateStateByKey(
       newUpdateFunc, new HashPartitioner(dimensionsValues.context.sparkContext.defaultParallelism), rememberPartitioner)
 
-    filterUpdatedAggregationsValues(valuesCheckpointed)
+    filterUpdatedAggregationsValuesWithTime(valuesCheckpointed)
+  }
+
+  protected def updateNonAssociativeStateWithoutTime(
+   dimensionsValues: DStream[(DimensionValuesWithoutTime, InputFields)])
+  : DStream[(DimensionValuesWithoutTime, Seq[Aggregation])] = {
+
+    dimensionsValues.checkpoint(new Duration(checkpointInterval))
+
+    val newUpdateFunc = (
+     iterator: Iterator[(DimensionValuesWithoutTime, Seq[InputFields], Option[AggregationsValues])]) => {
+
+      iterator
+        .flatMap { case (dimensionsKey, values, state) =>
+          updateNonAssociativeFunction(values, state).map(result => (dimensionsKey, result))
+        }
+    }
+    val valuesCheckpointed = dimensionsValues.updateStateByKey(
+      newUpdateFunc, new HashPartitioner(dimensionsValues.context.sparkContext.defaultParallelism), rememberPartitioner)
+
+    filterUpdatedAggregationsValuesWithoutTime(valuesCheckpointed)
   }
 
   protected def updateNonAssociativeFunction(values: Seq[InputFields], state: Option[AggregationsValues])
@@ -138,7 +186,8 @@ case class Cube(name: String,
     Option(AggregationsValues(aggregations, newValues))
   }
 
-  protected def aggregateNonAssociativeValues(dimensionsValues: DStream[(DimensionValuesTime, Seq[Aggregation])])
+
+  protected def aggregateNonAssociativeValuesWithTime(dimensionsValues: DStream[(DimensionValuesTime, Seq[Aggregation])])
   : DStream[(DimensionValuesTime, MeasuresValues)] =
 
     dimensionsValues.mapValues(aggregationValues => {
@@ -149,7 +198,19 @@ case class Cube(name: String,
       MeasuresValues(measures)
     })
 
-  protected def updateAssociativeState(dimensionsValues: DStream[(DimensionValuesTime, AggregationsValues)])
+  protected def aggregateNonAssociativeValuesWithoutTime(dimensionsValues: DStream[(DimensionValuesWithoutTime, Seq[Aggregation])])
+  : DStream[(DimensionValuesWithoutTime, MeasuresValues)] =
+
+    dimensionsValues.mapValues(aggregationValues => {
+      val measures = aggregationValues.groupBy(aggregation => aggregation.name)
+        .map { case (name, aggregations) =>
+          (name, nonAssociativeOperatorsMap(name).processReduce(aggregations.map(aggregation => aggregation.value)))
+        }
+      MeasuresValues(measures)
+    })
+
+
+  protected def updateAssociativeStateWithTime(dimensionsValues: DStream[(DimensionValuesTime, AggregationsValues)])
   : DStream[(DimensionValuesTime, MeasuresValues)] = {
 
     dimensionsValues.checkpoint(new Duration(checkpointInterval))
@@ -168,11 +229,37 @@ case class Cube(name: String,
     val valuesCheckpointed = dimensionsValues.updateStateByKey(
       newUpdateFunc, new HashPartitioner(dimensionsValues.context.sparkContext.defaultParallelism), rememberPartitioner)
 
-    filterUpdatedMeasures(valuesCheckpointed)
+    filterUpdatedMeasuresWithTime(valuesCheckpointed)
   }
 
-  def associativeAggregation(dimensionsValues: DStream[(DimensionValuesTime, InputFields)])
-  : DStream[(DimensionValuesTime, AggregationsValues)] =
+
+  protected def updateAssociativeStateWithoutTime(
+    dimensionsValues: DStream[(DimensionValuesWithoutTime, AggregationsValues)])
+  : DStream[(DimensionValuesWithoutTime, MeasuresValues)] = {
+
+    dimensionsValues.checkpoint(new Duration(checkpointInterval))
+
+    val newUpdateFunc = (
+      iterator: Iterator[(DimensionValuesWithoutTime,
+      Seq[AggregationsValues],
+      Option[Measures])]) => {
+
+       iterator
+        .flatMap { case (dimensionsKey, values, state) =>
+          updateAssociativeFunction(values, state).map(result => (dimensionsKey, result))
+        }
+    }
+
+    val valuesCheckpointed = dimensionsValues.updateStateByKey(
+      newUpdateFunc, new HashPartitioner(dimensionsValues.context.sparkContext.defaultParallelism), rememberPartitioner)
+
+    filterUpdatedMeasuresWithoutTime(valuesCheckpointed)
+  }
+
+
+
+  def associativeAggregation(dimensionsValues: DStream[(DimensionValues, InputFields)])
+  : DStream[(DimensionValues, AggregationsValues)] =
     dimensionsValues.mapValues(inputFieldsValues =>
       associativeOperators.map(op => op.key -> op.processMap(inputFieldsValues.fieldsValues)))
       .groupByKey()
@@ -188,6 +275,7 @@ case class Cube(name: String,
 
         AggregationsValues(aggregatedValues, UpdatedValues)
       })
+
 
   //scalastyle:off
   protected def updateAssociativeFunction(values: Seq[AggregationsValues], state: Option[Measures])
@@ -217,8 +305,8 @@ case class Cube(name: String,
 
   //scalastyle:on
 
-  protected def noAggregationsState(dimensionsValues: DStream[(DimensionValuesTime, InputFieldsValues)])
-  : DStream[(DimensionValuesTime, MeasuresValues)] =
+  protected def noAggregationsState(dimensionsValues: DStream[(DimensionValues, InputFieldsValues)])
+  : DStream[(DimensionValues, MeasuresValues)] =
     dimensionsValues.mapValues(aggregations =>
       MeasuresValues(operators.map(op => op.key -> None).toMap))
 
@@ -226,20 +314,42 @@ case class Cube(name: String,
    * Filter measuresValues that are been changed in this window
    */
 
-  protected def filterUpdatedMeasures(values: DStream[(DimensionValuesTime, Measures)])
+  protected def filterUpdatedMeasuresWithTime(values: DStream[(DimensionValuesTime, Measures)])
   : DStream[(DimensionValuesTime, MeasuresValues)] =
     values.flatMapValues(measures => if (measures.newValues == UpdatedValues) Some(measures.measuresValues) else None)
+
+
+
+  /**
+    * Filter measuresValues that are been changed in this window
+    */
+
+  protected def filterUpdatedMeasuresWithoutTime(values: DStream[(DimensionValuesWithoutTime, Measures)])
+  : DStream[(DimensionValuesWithoutTime, MeasuresValues)] =
+    values.flatMapValues(measures => if (measures.newValues == UpdatedValues) Some(measures.measuresValues) else None)
+
 
   /**
    * Filter aggregationsValues that are been changed in this window
    */
 
-  protected def filterUpdatedAggregationsValues(values: DStream[(DimensionValuesTime, AggregationsValues)])
+  protected def filterUpdatedAggregationsValuesWithTime(values: DStream[(DimensionValuesTime, AggregationsValues)])
   : DStream[(DimensionValuesTime, Seq[Aggregation])] =
     values.flatMapValues(aggregationsValues => {
       if (aggregationsValues.newValues == UpdatedValues) Some(aggregationsValues.values) else None
     })
 
+
+  /**
+    * Filter aggregationsValues that are been changed in this window
+    */
+
+  protected def filterUpdatedAggregationsValuesWithoutTime(
+    values: DStream[(DimensionValuesWithoutTime, AggregationsValues)])
+  : DStream[(DimensionValuesWithoutTime, Seq[Aggregation])] =
+    values.flatMapValues(aggregationsValues => {
+      if (aggregationsValues.newValues == UpdatedValues) Some(aggregationsValues.values) else None
+    })
   /**
    * Return the aggregations with the correct key in case of the actual streaming window have new values for the
    * dimensions values.
