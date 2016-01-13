@@ -14,14 +14,6 @@
   * limitations under the License.
   */
 
-package com.stratio.sparkta.aggregator
+package com.stratio.sparkta.sdk
 
-import com.stratio.sparkta.sdk.{Operator, Dimension}
-
-trait Cube {
-
-  def name: String
-  def dimensions: Seq[Dimension]
-  def operators: Seq[Operator]
-
-}
+trait DimensionValues

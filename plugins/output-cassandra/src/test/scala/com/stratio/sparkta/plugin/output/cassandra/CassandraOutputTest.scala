@@ -53,7 +53,7 @@ class CassandraOutputTest extends FlatSpec with Matchers with MockitoSugar with 
     val df: DataFrame = mock[DataFrame]
 
     doNothing().when(out).write(df,"tablename")
-    out.upsert(df,"tablename","minute")
+    out.upsertWithTime(df,"tablename","minute")
   }
 
   "setup" should "return X" in {

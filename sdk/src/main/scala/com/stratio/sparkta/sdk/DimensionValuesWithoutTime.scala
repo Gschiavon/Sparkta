@@ -16,5 +16,5 @@
 
 package com.stratio.sparkta.sdk
 
-case class DimensionValuesTime(cube: String, dimensionValues: Seq[DimensionValue], time: Long, timeDimension: String)
-      extends DimensionValues
+case class DimensionValuesWithoutTime(cube: String,
+                                      dimensionValues: Seq[DimensionValue]) extends DimensionValues

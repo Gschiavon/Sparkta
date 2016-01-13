@@ -36,7 +36,7 @@ class CsvOutputTest extends FlatSpec with Matchers with MockitoSugar {
     implicit val savemock = mock[CsvSchemaRDD]
     doNothing().when(out).saveAction(any[String], meq(dataframe))
 
-    out.upsert(dataframe, "tableName", "")
+    out.upsertWithTime(dataframe, "tableName", "")
 
     verify(out).saveAction(any[String], meq(dataframe))
   }
