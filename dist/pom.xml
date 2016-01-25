@@ -25,6 +25,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
     <artifactId>stratio-sparkta</artifactId>
+    <packaging>pom</packaging>
+
     <properties>
         <classpath.directory>lib</classpath.directory>
         <plugins.directory>plugins</plugins.directory>
@@ -37,10 +39,23 @@
         <dependency>
             <groupId>com.stratio.sparkta</groupId>
             <artifactId>driver</artifactId>
+            <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.stratio.sparkta</groupId>
             <artifactId>serving-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.stratio.sparkta</groupId>
+            <artifactId>web</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.stratio.sparkta.plugins</groupId>
+            <artifactId>all</artifactId>
+            <version>${project.version}</version>
+            <type>pom</type>
         </dependency>
     </dependencies>
     <build>
@@ -85,7 +100,7 @@
                                             <fileset dir="../serving-api" includes="**/*.jar" />
                                             <mapper type="flatten" />
                                         </copy>
-                                        <copy todir="target/appassembler/repo/plugins">
+                                        <copy todir="target/appassembler/plugins">
                                             <fileset dir="../plugins" includes="**/*.jar" excludes="**/input-rabbitMQ*.jar" />
                                             <mapper type="flatten" />
                                         </copy>
@@ -207,32 +222,32 @@
                                     <from>target/appassembler/:/etc/sds/sparkta</from>
                                     <to>/etc/sds/sparkta</to>
                                 </copyDirectory>
+                                <!--<copyDirectory>-->
+                                    <!--<from>target/appassembler/repo/plugins</from>-->
+                                    <!--<to>/opt/sds/sparkta/plugins</to>-->
+                                <!--</copyDirectory>-->
+                                <!--<copyDirectory>-->
+                                    <!--<from>target/appassembler/repo/driver</from>-->
+                                    <!--<to>/opt/sds/sparkta/driver</to>-->
+                                <!--</copyDirectory>-->
+                                <!--<copyDirectory>-->
+                                    <!--<from>target/appassembler/repo/cluster</from>-->
+                                    <!--<to>/opt/sds/sparkta/cluster</to>-->
+                                <!--</copyDirectory>-->
+                                <!--<copyDirectory>-->
+                                    <!--<from>target/appassembler/repo/serving-api</from>-->
+                                    <!--<to>/opt/sds/sparkta/serving-api</to>-->
+                                <!--</copyDirectory>-->
+                                <!--<copyDirectory>-->
+                                    <!--<from>target/appassembler/repo/web</from>-->
+                                    <!--<to>/opt/sds/sparkta/plugins</to>-->
+                                <!--</copyDirectory>-->
                                 <copyDirectory>
-                                    <from>target/appassembler/repo/plugins</from>
-                                    <to>/opt/sds/sparkta/plugins</to>
-                                </copyDirectory>
-                                <copyDirectory>
-                                    <from>target/appassembler/repo/driver</from>
-                                    <to>/opt/sds/sparkta/driver</to>
-                                </copyDirectory>
-                                <copyDirectory>
-                                    <from>target/appassembler/repo/cluster</from>
-                                    <to>/opt/sds/sparkta/cluster</to>
-                                </copyDirectory>
-                                <copyDirectory>
-                                    <from>target/appassembler/repo/serving-api</from>
-                                    <to>/opt/sds/sparkta/serving-api</to>
-                                </copyDirectory>
-                                <copyDirectory>
-                                    <from>target/appassembler/repo/web</from>
-                                    <to>/opt/sds/sparkta/plugins</to>
-                                </copyDirectory>
-                                <copyDirectory>
-                                    <from>target/appassembler/repo/benchmark</from>
+                                    <from>../benchmark</from>
                                     <to>/opt/sds/sparkta/benchmark</to>
                                 </copyDirectory>
                                 <copyDirectory>
-                                    <from>target/appassembler/repo/examples</from>
+                                    <from>../examples</from>
                                     <to>/opt/sds/sparkta/examples</to>
                                 </copyDirectory>
                             </assembly>
@@ -260,7 +275,7 @@
                                     <architecture>all</architecture>
                                 </configuration>
                             </execution>
-                            <execution>
+        <!--                    <execution>
                                 <id>rpm</id>
                                 <phase>package</phase>
                                 <goals>
@@ -269,7 +284,7 @@
                                 <configuration>
                                     <architecture>noarch</architecture>
                                 </configuration>
-                            </execution>
+                            </execution>-->
                         </executions>
                     </plugin>
                 </plugins>

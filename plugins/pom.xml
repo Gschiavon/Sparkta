@@ -20,12 +20,15 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
-        <artifactId>parent</artifactId>
         <groupId>com.stratio.sparkta</groupId>
+        <artifactId>parent</artifactId>
         <version>0.9.0-SNAPSHOT</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
-    <artifactId>plugins</artifactId>
+    <groupId>com.stratio.sparkta.plugins</groupId>
+    <artifactId>parent</artifactId>
+    <version>${parent.version}</version>
+
     <packaging>pom</packaging>
     <modules>
         <module>field-dateTime</module>
@@ -68,6 +71,7 @@
         <module>input-rabbitMQ</module>
         <module>parser-type</module>
         <module>parser-ingestion</module>
+        <module>plugins-all</module>
     </modules>
 
     <dependencies>

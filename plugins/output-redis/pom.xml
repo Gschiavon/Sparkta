@@ -45,8 +45,11 @@
         <embedded-redis.version>0.5</embedded-redis.version>
     </properties>
 
+
     <modelVersion>4.0.0</modelVersion>
+    <groupId>com.stratio.sparkta.plugins</groupId>
     <artifactId>output-redis</artifactId>
+
 
     <dependencies>
         <dependency>

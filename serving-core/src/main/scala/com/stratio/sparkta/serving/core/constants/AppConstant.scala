@@ -23,7 +23,7 @@ import com.stratio.sparkta.sdk.Parser
  */
 object AppConstant {
 
-  final val JarPluginsFolder = "plugins"
+  final val JarPluginsFolder = "repo/plugins"
   final val ClasspathJarFolder = "repo"
   final val ClusterExecutionJarFolder = "driver"
   final val ExecutionMode = "executionMode"
