@@ -45,13 +45,13 @@ case class StreamingContextService(policyStatusActor: Option[ActorRef] = None, g
   implicit val timeout: Timeout = Timeout(3.seconds)
   final val OutputsSparkConfiguration = "getSparkConfiguration"
 
-  def standAloneStreamingContext(apConfig: AggregationPoliciesModel, files: Seq[File]): Option[StreamingContext] = {
+  def standAloneStreamingContext(apConfig: CommonPoliciesModel, files: Seq[File]): Option[StreamingContext] = {
     runStatusListener(apConfig.id.get, apConfig.name)
     SparktaJob.runSparktaJob(getStandAloneSparkContext(apConfig, files), apConfig)
     SparkContextFactory.sparkStreamingInstance
   }
 
-  def clusterStreamingContext(apConfig: AggregationPoliciesModel,
+  def clusterStreamingContext(apConfig: CommonPoliciesModel,
                               files: Seq[URI],
                               specifictConfig: Map[String, String]): Option[StreamingContext] = {
     val exitWhenStop = true
@@ -60,7 +60,7 @@ case class StreamingContextService(policyStatusActor: Option[ActorRef] = None, g
     SparkContextFactory.sparkStreamingInstance
   }
 
-  private def getStandAloneSparkContext(apConfig: AggregationPoliciesModel, jars: Seq[File]): SparkContext = {
+  private def getStandAloneSparkContext(apConfig: CommonPoliciesModel, jars: Seq[File]): SparkContext = {
     val pluginsSparkConfig = SparktaJob.getSparkConfigs(apConfig, OutputsSparkConfiguration, Output.ClassSuffix,
       new ReflectionUtils())
     val standAloneConfig = Try(generalConfig.get.getConfig(AppConstant.ConfigLocal)) match {
@@ -70,7 +70,7 @@ case class StreamingContextService(policyStatusActor: Option[ActorRef] = None, g
     SparkContextFactory.sparkStandAloneContextInstance(standAloneConfig, pluginsSparkConfig, jars)
   }
 
-  private def getClusterSparkContext(apConfig: AggregationPoliciesModel,
+  private def getClusterSparkContext(apConfig: CommonPoliciesModel,
                                      classPath: Seq[URI],
                                      specifictConfig: Map[String, String]): SparkContext = {
     val pluginsSparkConfig =

@@ -80,7 +80,7 @@ class PolicyActor(curatorFramework: CuratorFramework, policyStatusActor: ActorRe
       ))
     })
 
-  private def byId(id: String): AggregationPoliciesModel = read[AggregationPoliciesModel](
+  private def byId(id: String): CommonPoliciesModel = read[CommonPoliciesModel](
     new Predef.String(curatorFramework.getData.forPath(s"${AppConstant.PoliciesBasePath}/$id")))
 
   def findByName(name: String): Unit =
@@ -97,11 +97,11 @@ class PolicyActor(curatorFramework: CuratorFramework, policyStatusActor: ActorRe
       ))
     })
 
-  def associateStatus(model: AggregationPoliciesModel): Unit = {
+  def associateStatus(model: CommonPoliciesModel): Unit = {
     policyStatusActor ! PolicyStatusActor.Create(PolicyStatusModel(model.id.get, PolicyStatusEnum.NotStarted))
   }
 
-  def create(policy: AggregationPoliciesModel): Unit =
+  def create(policy: CommonPoliciesModel): Unit =
     sender ! ResponsePolicy(Try({
       val searchPolicy = existsByNameId(policy.name)
       if (searchPolicy.isDefined) {
@@ -121,7 +121,7 @@ class PolicyActor(curatorFramework: CuratorFramework, policyStatusActor: ActorRe
       policyS
     }))
 
-  def update(policy: AggregationPoliciesModel): Unit = {
+  def update(policy: CommonPoliciesModel): Unit = {
     sender ! Response(Try({
       val searchPolicy = existsByNameId(policy.name, policy.id)
       if (searchPolicy.isEmpty) {
@@ -151,14 +151,14 @@ class PolicyActor(curatorFramework: CuratorFramework, policyStatusActor: ActorRe
       ))
     })
 
-  def existsByNameId(name: String, id: Option[String] = None): Option[AggregationPoliciesModel] = {
+  def existsByNameId(name: String, id: Option[String] = None): Option[CommonPoliciesModel] = {
     val nameToCompare = name.toLowerCase
     Try({
       val basePath = s"${AppConstant.PoliciesBasePath}"
       if (CuratorFactoryHolder.existsPath(basePath)) {
         val children = curatorFramework.getChildren.forPath(basePath)
         JavaConversions.asScalaBuffer(children).toList.map(element =>
-          read[AggregationPoliciesModel](new String(curatorFramework.getData.forPath(s"$basePath/$element"))))
+          read[CommonPoliciesModel](new String(curatorFramework.getData.forPath(s"$basePath/$element"))))
           .find(policy => if (id.isDefined) policy.id.get == id.get else policy.name == nameToCompare)
       } else None
     }) match {
@@ -170,7 +170,7 @@ class PolicyActor(curatorFramework: CuratorFramework, policyStatusActor: ActorRe
     }
   }
 
-  def setVersion(lastPolicy: AggregationPoliciesModel, newPolicy: AggregationPoliciesModel): Option[Int] = {
+  def setVersion(lastPolicy: CommonPoliciesModel, newPolicy: CommonPoliciesModel): Option[Int] = {
     if (lastPolicy.cubes != newPolicy.cubes) {
       lastPolicy.version match {
         case Some(version) => Some(version + ActorsConstant.UnitVersion)
@@ -182,9 +182,9 @@ class PolicyActor(curatorFramework: CuratorFramework, policyStatusActor: ActorRe
 
 object PolicyActor {
 
-  case class Create(policy: AggregationPoliciesModel)
+  case class Create(policy: CommonPoliciesModel)
 
-  case class Update(policy: AggregationPoliciesModel)
+  case class Update(policy: CommonPoliciesModel)
 
   case class Delete(name: String)
 
@@ -198,8 +198,8 @@ object PolicyActor {
 
   case class Response(status: Try[_])
 
-  case class ResponsePolicies(policies: Try[Seq[AggregationPoliciesModel]])
+  case class ResponsePolicies(policies: Try[Seq[CommonPoliciesModel]])
 
-  case class ResponsePolicy(policy: Try[AggregationPoliciesModel])
+  case class ResponsePolicy(policy: Try[CommonPoliciesModel])
 
 }
